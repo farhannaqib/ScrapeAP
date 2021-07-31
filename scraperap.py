@@ -58,47 +58,42 @@ def parsetext(driver = webdriver):
     # break multi-headlines into a line each
     chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
     # drop blank lines
-    text = "\n".join(chunk for chunk in chunks if chunk)
-    text= str(text)
-    text = text.replace("\n","")
-
-    return text
+    return "".join(chunk for chunk in chunks if chunk).replace("\\n", "")
 
 
-def checktext(historyvar = str, text = str, ap = str):
-    if text != historyvar:
-        print("An update has occured")
-        text=str(text)
-        score = re.search(f"{ap}\n\n\n\n\nYour score:\n(.+?)\n", text) #checks for the score
-        if score!="--":
-            print(f"Your score is {score}")
-            return score
-    else:
-        print("No changes identified since the last run")
-    return None
+def checktext(text = str, courses = list):
+    notifier = ToastNotifier()
+    coursestoremove = []
+    for ap in courses:
+        score = re.search(f"{ap}Your score:(.+?)", text) #checks for the score
+        if score == None:
+            continue
+        score = score[0][-1:]
+        if score!="-":
+            print(f"Your {ap} score is {score}")
+            coursestoremove.append(ap)
+            notifier.show_toast("ScrapeAP", f"Your {ap} grades are up, you got a {score}!")
+    for c in coursestoremove:
+        courses.remove(c)
 
 
 def main():
-    notifier = ToastNotifier()
     # parameters should be (username, password), both in string format
-    driver = createcollegeboarddriver("", "")
-    historyvar = str(parsetext(driver))
+    a = input("Username: ")
+    b = input("Password: ")
+    driver = createcollegeboarddriver(a, b)
 
-    listofclasses = ["Physics 1"] #list of classes to check
+    listofclasses = ["English Language and Composition", "Calculus BC"] #list of classes to check
 
     #The actual comparing
     while(1):
         driver.refresh()
         text = parsetext(driver)
-        for apcourse in listofclasses:
-            var = checktext(historyvar, text, apcourse)
-            if var != None:
-                listofclasses.remove(apcourse)
-                notifier.show_toast("ScrapeAP", f"Your {apcourse} grades are up, you got a {var}!")
+        checktext(text, listofclasses)
         if (len(listofclasses)==0):
             break
         print("LOG: Finished checking, time to sleep")
-        time.sleep(10*60) 
+        time.sleep(0)
 
     driver.close()
 
