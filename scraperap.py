@@ -16,30 +16,22 @@ def createcollegeboarddriver(username, password):
     options.add_argument('--disable-gpu')
 
     driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=options)
-    driver.get("https://www.collegeboard.org/")
-    time.sleep(3)
+    driver.get("https://apscore.collegeboard.org/scores/#m=signin-form&scores")
 
-    driver.find_element_by_xpath('//*[@id="view10_username"]').send_keys(username)
-    driver.find_element_by_xpath('//*[@id="view10_password"]').send_keys(password) # locates elements and sends keys
-    driver.find_element_by_xpath('//*[@id="profile"]/div/div[5]/div/div[2]/div/div/div/div/div[1]/form/div[3]/div[2]/button').click()
+    driver.find_element_by_xpath('//*[@id="inputUsername"]').send_keys(username)
+    driver.find_element_by_xpath('//*[@id="inputPassword"]').send_keys(password)
+    driver.find_element_by_xpath('//*[@id="signInForm"]/div[3]/div/div/button').click()
     time.sleep(5) #needed because collegeboard takes a while to load
 
-    try:
-        driver.find_element_by_xpath('//*[@id="profile"]/div/div[5]/div/div/div[2]/div/div/div/div/div/ul/li[3]/a').click()
-    except:
-        time.sleep(5)
-        driver.find_element_by_xpath('//*[@id="profile"]/div/div[5]/div/div/div[2]/div/div/div/div/div/ul/li[3]/a').click()
-
     print("LOG: Logging into College Board") 
-    time.sleep(2)
 
     try: #there might be an additional security check
         driver.find_element_by_xpath('//*[@id="security"]').send_keys(password)
         driver.find_element_by_xpath('//*[@id="securityCheckForm"]/div/div/span/button').click()
         print("LOG: Additional log-in needed, and was successful")
+        time.sleep(3)
     except:
         print("LOG: Additional log-in not needed")
-    time.sleep(3)
 
     return driver
 
@@ -83,7 +75,7 @@ def main():
     b = input("Password: ")
     driver = createcollegeboarddriver(a, b)
 
-    listofclasses = ["English Language and Composition", "Calculus BC"] #list of classes to check
+    listofclasses = ["English Language and Composition", "Calculus BC", "Computer Science A"] #list of classes to check
 
     #The actual comparing
     while(1):
